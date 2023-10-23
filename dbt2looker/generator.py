@@ -183,11 +183,17 @@ looker_scalar_types = ['number', 'yesno', 'string']
 looker_timeframes = [
     'raw',
     'time',
+    'hour',
     'date',
+    'day_of_year',
     'week',
+    'week_of_year',
     'month',
+    'month_num',
+    'month_name',
     'quarter',
-    'year',
+    'quarter_of_year',
+    'year'
 ]
 
 
@@ -210,7 +216,7 @@ def lookml_date_time_dimension_group(column: models.DbtModelColumn, adapter_type
         'sql': column.meta.dimension.sql or f'${{TABLE}}.{column.name}',
         'description': column.meta.dimension.description or column.description,
         'datatype': map_adapter_type_to_looker(adapter_type, column.data_type),
-        'timeframes': ['raw', 'time', 'hour', 'date', 'week', 'month', 'quarter', 'year']
+        'timeframes': looker_timeframes
     }
 
 
@@ -221,7 +227,7 @@ def lookml_date_dimension_group(column: models.DbtModelColumn, adapter_type: mod
         'sql': column.meta.dimension.sql or f'${{TABLE}}.{column.name}',
         'description': column.meta.dimension.description or column.description,
         'datatype': map_adapter_type_to_looker(adapter_type, column.data_type),
-        'timeframes': ['raw', 'date', 'week', 'month', 'quarter', 'year']
+        'timeframes': looker_timeframes
     }
 
 
@@ -251,6 +257,21 @@ def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.Su
                 {'value_format_name': column.meta.dimension.value_format_name.value}
                 if (column.meta.dimension.value_format_name
                     and map_adapter_type_to_looker(adapter_type, column.data_type) == 'number')
+                else {}
+            ),
+            **(
+                {'label': column.meta.dimension.label}
+                if (column.meta.dimension.label)
+                else {}
+            ),
+            **(
+                {'group_label': column.meta.dimension.group_label}
+                if (column.meta.dimension.group_label)
+                else {}
+            ),
+            **(
+                {'view_label': column.meta.dimension.view_label}
+                if (column.meta.dimension.view_label)
                 else {}
             )
         }
@@ -301,6 +322,8 @@ def lookml_measure(measure_name: str, column: models.DbtModelColumn, measure: mo
         m['value_format_name'] = measure.value_format_name.value
     if measure.group_label:
         m['group_label'] = measure.group_label
+    if measure.view_label:
+        m['view_label'] = measure.view_label
     if measure.label:
         m['label'] = measure.label
     if measure.hidden:
@@ -309,9 +332,11 @@ def lookml_measure(measure_name: str, column: models.DbtModelColumn, measure: mo
 
 
 def lookml_view_from_dbt_model(model: models.DbtModel, adapter_type: models.SupportedDbtAdapters):
+    view_name = model.config.meta.view_name or model.name
+    
     lookml = {
         'view': {
-            'name': model.name,
+            'name': view_name,
             'sql_table_name': model.relation_name,
             'dimension_groups': lookml_dimension_groups_from_model(model, adapter_type),
             'dimensions': lookml_dimensions_from_model(model, adapter_type),
@@ -320,35 +345,45 @@ def lookml_view_from_dbt_model(model: models.DbtModel, adapter_type: models.Supp
     }
     logging.debug(
         f'Created view from model %s with %d measures, %d dimensions',
-        model.name,
+        view_name,
         len(lookml['view']['measures']),
         len(lookml['view']['dimensions']),
     )
     contents = lkml.dump(lookml)
-    filename = f'{model.name}.view.lkml'
+    filename = f'{view_name}.view.lkml'
     return models.LookViewFile(filename=filename, contents=contents)
 
 
 def lookml_model_from_dbt_model(model: models.DbtModel, connection_name: str):
     # Note: assumes view names = model names
     #       and models are unique across dbt packages in project
+    view_name = model.config.meta.view_name or model.name
     lookml = {
         'connection': connection_name,
         'include': '/views/*',
         'explore': {
-            'name': model.name,
-            'description': model.description,
-            'joins': [
-                {
-                    'name': join.join,
-                    'type': join.type.value,
-                    'relationship': join.relationship.value,
-                    'sql_on': join.sql_on,
-                }
-                for join in model.meta.joins
-            ]
+            'name': view_name
         }
     }
+    if model.config.meta.label:
+        lookml['explore']['label'] = model.config.meta.label
+    if model.config.meta.view_label:
+        lookml['explore']['view_label'] = model.config.meta.view_label
+        
+    if model.description:
+        lookml['explore']['description'] = model.description
+    lookml['explore']['joins'] = [
+        {
+            'name': join.join,
+            'type': join.type.value,
+            'relationship': join.relationship.value,
+            'sql_on': join.sql_on,
+            'foreign_key': join.foreig_key,
+            'view_label': join.view_label,
+        }
+        for join in model.config.meta.joins
+    ]
+
     contents = lkml.dump(lookml)
-    filename = f'{model.name}.model.lkml'
+    filename = f'{view_name}.model.lkml'
     return models.LookModelFile(filename=filename, contents=contents)

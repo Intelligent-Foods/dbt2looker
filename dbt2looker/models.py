@@ -86,6 +86,7 @@ class Dbt2LookerMeasure(BaseModel):
     sql: Optional[str]
     value_format_name: Optional[LookerValueFormatName]
     group_label: Optional[str]
+    view_label: Optional[str]
     label: Optional[str]
     hidden: Optional[LookerHiddenType]
 
@@ -104,6 +105,9 @@ class Dbt2LookerDimension(BaseModel):
     sql: Optional[str]
     description: Optional[str]
     value_format_name: Optional[LookerValueFormatName]
+    group_label: Optional[str]
+    view_label: Optional[str]
+    label: Optional[str]
 
 
 class Dbt2LookerMeta(BaseModel):
@@ -136,7 +140,7 @@ class DbtModelColumnMeta(Dbt2LookerMeta):
 
 class DbtModelColumn(BaseModel):
     name: str
-    description: str
+    description: Optional[str]
     data_type: Optional[str]
     meta: DbtModelColumnMeta
 
@@ -150,26 +154,33 @@ class Dbt2LookerExploreJoin(BaseModel):
     join: str
     type: Optional[LookerJoinType] = LookerJoinType.left_outer
     relationship: Optional[LookerJoinRelationship] = LookerJoinRelationship.many_to_one
-    sql_on: str
+    sql_on: Optional[str]
+    foreign_key: Optional[str]
+    view_label: Optional[str]
 
 
 class Dbt2LookerModelMeta(BaseModel):
     joins: Optional[List[Dbt2LookerExploreJoin]] = []
+    view_name: Optional[str]
+    label: Optional[str]
+    view_label: Optional[str]
 
 
 class DbtModelMeta(Dbt2LookerModelMeta):
     pass
 
+class DbtModelConfig(BaseModel):
+    meta: Optional[DbtModelMeta]
 
 class DbtModel(DbtNode):
     resource_type: Literal['model']
     relation_name: str
     db_schema: str = Field(..., alias='schema')
     name: str
-    description: str
+    description: Optional[str]
     columns: Dict[str, DbtModelColumn]
     tags: List[str]
-    meta: DbtModelMeta
+    config: Optional[DbtModelConfig]
 
     @validator('columns')
     def case_insensitive_column_names(cls, v: Dict[str, DbtModelColumn]):

@@ -2,6 +2,19 @@
 
 Recent and upcoming changes to dbt2looker
 
+## Unreleased (0.11.1, not on pypy)
+
+### Added
+
+- support for explore meta fields such as label, view_name, view_label
+- support for foreign_key and view_label for joins
+- support for label, group_label and view_label for all dimensions and measures
+
+### Changed
+
+- Add model meta config under the config key instead of as a high level key
+- Extend timeframe values 
+
 ## 0.11.0
 ### Added
 - support label and hidden fields (#49)

@@ -31,6 +31,7 @@ def tags_match(query_tag: str, model: models.DbtModel) -> bool:
 
 def parse_models(raw_manifest: dict, tag=None) -> List[models.DbtModel]:
     manifest = models.DbtManifest(**raw_manifest)
+    
     all_models: List[models.DbtModel] = [
         node
         for node in manifest.nodes.values()
