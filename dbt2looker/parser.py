@@ -1,7 +1,6 @@
 import logging
 from typing import Dict, Optional, List
 from functools import reduce
-from pydantic import ValidationError
 
 from . import models
 
