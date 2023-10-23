@@ -24,6 +24,8 @@ models:
           dimension:
             name: unique_page_view_id
             value_format_name: id      # Optional - specify a format for a dimension
+            group_label: "Ids"
+            view_label: "Page props"
 
           # Optional - add measures based on this column
           measures:
@@ -46,9 +48,11 @@ models:
         description: "persistent id of the user viewing the page"
 
     # Optionally - specify how other models join to this table and an explore will be generated
-    meta:
-      joins:
-        - join: users                               # Reference another dbt model to join to
-          sql_on: "${users.id} = ${pages.user_id}"  # Sql string containing join clause
-          type: left_outer                          # Optional - left_outer is default
-          relationship: many_to_one                 # Optional - many_to_one is default
+    config: 
+      meta:
+        view_name: "dbt_pages"
+        joins:
+          - join: users                               # Reference another dbt model to join to
+            sql_on: "${users.id} = ${pages.user_id}"  # Sql string containing join clause
+            type: left_outer                          # Optional - left_outer is default
+            relationship: many_to_one                 # Optional - many_to_one is default

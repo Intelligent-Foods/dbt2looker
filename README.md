@@ -73,6 +73,11 @@ You can define looker measures in your dbt `schema.yml` files. For example:
 ```yaml
 models:
   - name: pages
+    config:
+      meta:
+        tags:
+          - looker
+        view_name: "dbt_pages"
     columns:
       - name: url
         description: "Page url"
