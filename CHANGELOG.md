@@ -2,7 +2,14 @@
 
 Recent and upcoming changes to dbt2looker
 
-## Unreleased (0.11.1, not on pypy)
+## 0.11.2 (Not released to pypy)
+
+### Changed
+
+- indent subsequent lines of multi-line dimension, measure and explore descriptions
+  for improved code formatting (no effect on what we see in Looker)
+
+## 0.11.1 (Not released to pypy)
 
 ### Added
 
