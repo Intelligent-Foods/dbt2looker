@@ -200,6 +200,11 @@ looker_timeframes = [
 def normalise_spark_types(column_type: str) -> str:
     return re.match(r'^[^\(]*', column_type).group(0)
 
+# A dimension/measure description will start indented at 4 spaces, so subsequent
+# lines should start indented at 4 + 2 spaces.
+def indent_multiline_description(description: str, space_count = 6) -> str:
+    return description.replace('\n', '\n' + ' ' * space_count)
+
 
 def map_adapter_type_to_looker(adapter_type: models.SupportedDbtAdapters, column_type: str):
     normalised_column_type = (normalise_spark_types(column_type) if adapter_type == models.SupportedDbtAdapters.spark.value else column_type).upper()
@@ -210,22 +215,24 @@ def map_adapter_type_to_looker(adapter_type: models.SupportedDbtAdapters, column
 
 
 def lookml_date_time_dimension_group(column: models.DbtModelColumn, adapter_type: models.SupportedDbtAdapters):
+    description = column.meta.dimension.description or column.description
     return {
         'name': column.meta.dimension.name or column.name,
         'type': 'time',
         'sql': column.meta.dimension.sql or f'${{TABLE}}.{column.name}',
-        'description': column.meta.dimension.description or column.description,
+        'description': indent_multiline_description(description),
         'datatype': map_adapter_type_to_looker(adapter_type, column.data_type),
         'timeframes': looker_timeframes
     }
 
 
 def lookml_date_dimension_group(column: models.DbtModelColumn, adapter_type: models.SupportedDbtAdapters):
+    description = column.meta.dimension.description or column.description
     return {
         'name': column.meta.dimension.name or column.name,
         'type': 'time',
         'sql': column.meta.dimension.sql or f'${{TABLE}}.{column.name}',
-        'description': column.meta.dimension.description or column.description,
+        'description': indent_multiline_description(description),
         'datatype': map_adapter_type_to_looker(adapter_type, column.data_type),
         'timeframes': looker_timeframes
     }
@@ -252,7 +259,7 @@ def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.Su
             'name': column.meta.dimension.name or column.name,
             'type': map_adapter_type_to_looker(adapter_type, column.data_type),
             'sql': column.meta.dimension.sql or f'${{TABLE}}.{column.name}',
-            'description': column.meta.dimension.description or column.description,
+            'description': indent_multiline_description(column.meta.dimension.description or column.description),
             **(
                 {'value_format_name': column.meta.dimension.value_format_name.value}
                 if (column.meta.dimension.value_format_name
@@ -310,11 +317,13 @@ def lookml_measures_from_model(model: models.DbtModel):
 
 
 def lookml_measure(measure_name: str, column: models.DbtModelColumn, measure: models.Dbt2LookerMeasure, model: models.DbtModel):
+    measure_description = measure.description or column.description or f'{measure.type.value.capitalize()} of {column.name}'
+    
     m = {
         'name': measure_name,
         'type': measure.type.value,
         'sql': measure.sql or f'${{TABLE}}.{column.name}',
-        'description': measure.description or column.description or f'{measure.type.value.capitalize()} of {column.name}',
+        'description': indent_multiline_description(measure_description),
     }
     if measure.filters:
         m['filters'] = lookml_measure_filters(measure, model)
@@ -370,8 +379,10 @@ def lookml_model_from_dbt_model(model: models.DbtModel, connection_name: str):
     if model.config.meta.view_label:
         lookml['explore']['view_label'] = model.config.meta.view_label
         
+    # An explore description will start indented at 2 spaces, so subsequent
+    # lines should start indented at 2 + 2 spaces.
     if model.description:
-        lookml['explore']['description'] = model.description
+        lookml['explore']['description'] = indent_multiline_description(model.description, 4)
     lookml['explore']['joins'] = [
         {
             'name': join.join,
