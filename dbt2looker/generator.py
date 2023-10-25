@@ -222,7 +222,12 @@ def lookml_date_time_dimension_group(column: models.DbtModelColumn, adapter_type
         'sql': column.meta.dimension.sql or f'${{TABLE}}.{column.name}',
         'description': indent_multiline_description(description),
         'datatype': map_adapter_type_to_looker(adapter_type, column.data_type),
-        'timeframes': looker_timeframes
+        'timeframes': looker_timeframes,
+        **(
+            {'view_label': column.meta.dimension.view_label}
+            if (column.meta.dimension.view_label)
+            else {}
+        )
     }
 
 
@@ -234,7 +239,12 @@ def lookml_date_dimension_group(column: models.DbtModelColumn, adapter_type: mod
         'sql': column.meta.dimension.sql or f'${{TABLE}}.{column.name}',
         'description': indent_multiline_description(description),
         'datatype': map_adapter_type_to_looker(adapter_type, column.data_type),
-        'timeframes': looker_timeframes
+        'timeframes': looker_timeframes,
+        **(
+            {'view_label': column.meta.dimension.view_label}
+            if (column.meta.dimension.view_label)
+            else {}
+        )
     }
 
 

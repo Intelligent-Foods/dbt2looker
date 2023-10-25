@@ -2,6 +2,12 @@
 
 Recent and upcoming changes to dbt2looker
 
+## 0.11.3 (Not released to pypy)
+
+### Added
+
+- support for view_label for dimension groups
+
 ## 0.11.2 (Not released to pypy)
 
 ### Changed
