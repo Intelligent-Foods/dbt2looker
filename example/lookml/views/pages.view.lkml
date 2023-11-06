@@ -57,6 +57,13 @@ view: pages {
     description: "persistent id of the user viewing the page"
   }
 
+  dimension: domain_hash {
+    type: string
+    sql: md5(${TABLE}.referring_domain || ${TABLE}.user_id) ;;
+    description: "Dummy dimension showcasing derived dimension by SQL formula from
+      multiple columns."
+  }
+
   measure: total_page_views {
     type: count
     sql: ${TABLE}.id ;;

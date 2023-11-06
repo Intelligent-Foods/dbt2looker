@@ -2,6 +2,12 @@
 
 Recent and upcoming changes to dbt2looker
 
+## 0.11.4 (Not released to pypy)
+
+### Added
+
+- support for dimensions defined on the model level
+
 ## 0.11.3 (Not released to pypy)
 
 ### Added

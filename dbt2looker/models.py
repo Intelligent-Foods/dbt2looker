@@ -82,7 +82,7 @@ class LookerHiddenType(str, Enum):
 class Dbt2LookerMeasure(BaseModel):
     type: LookerMeasureType
     filters: Optional[List[Dict[str, str]]] = []
-    description: Optional[str]
+    description: Optional[str] = ''
     sql: Optional[str]
     value_format_name: Optional[LookerValueFormatName]
     group_label: Optional[str]
@@ -103,11 +103,14 @@ class Dbt2LookerDimension(BaseModel):
     enabled: Optional[bool] = True
     name: Optional[str]
     sql: Optional[str]
-    description: Optional[str]
+    description: Optional[str] = ''
     value_format_name: Optional[LookerValueFormatName]
     group_label: Optional[str]
     view_label: Optional[str]
     label: Optional[str]
+    # similar to data_type, will become type for looker dimensions defined 
+    # at the model level
+    type: Optional[str]
 
 
 class Dbt2LookerMeta(BaseModel):
@@ -140,7 +143,7 @@ class DbtModelColumnMeta(Dbt2LookerMeta):
 
 class DbtModelColumn(BaseModel):
     name: str
-    description: Optional[str]
+    description: Optional[str] = ''
     data_type: Optional[str]
     meta: DbtModelColumnMeta
 
@@ -164,6 +167,7 @@ class Dbt2LookerModelMeta(BaseModel):
     view_name: Optional[str]
     label: Optional[str]
     view_label: Optional[str]
+    dimensions: Optional[List[Dbt2LookerDimension]] = []
 
 
 class DbtModelMeta(Dbt2LookerModelMeta):
@@ -177,7 +181,7 @@ class DbtModel(DbtNode):
     relation_name: str
     db_schema: str = Field(..., alias='schema')
     name: str
-    description: Optional[str]
+    description: Optional[str] = ''
     columns: Dict[str, DbtModelColumn]
     tags: List[str]
     config: Optional[DbtModelConfig]

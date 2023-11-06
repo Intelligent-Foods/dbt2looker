@@ -264,7 +264,7 @@ def lookml_dimension_groups_from_model(model: models.DbtModel, adapter_type: mod
 
 
 def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.SupportedDbtAdapters):
-    return [
+    column_dimensions = [
         {
             'name': column.meta.dimension.name or column.name,
             'type': map_adapter_type_to_looker(adapter_type, column.data_type),
@@ -296,6 +296,40 @@ def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.Su
         if column.meta.dimension.enabled
         and map_adapter_type_to_looker(adapter_type, column.data_type) in looker_scalar_types
     ]
+    # dimensions defined at the model level, useful for dimensions derived by
+    # an SQL formula based on multiple columns
+    model_dimensions = [
+        {
+            'name': dim.name,
+            'type': map_adapter_type_to_looker(adapter_type, dim.type),
+            'sql': dim.sql,
+            'description': indent_multiline_description(dim.description),
+            **(
+                {'value_format_name': dim.value_format_name.value}
+                if (dim.value_format_name
+                    and map_adapter_type_to_looker(adapter_type, dim.type) == 'number')
+                else {}
+            ),
+            **(
+                {'label': dim.label}
+                if (dim.label)
+                else {}
+            ),
+            **(
+                {'group_label': dim.group_label}
+                if (dim.group_label)
+                else {}
+            ),
+            **(
+                {'view_label': dim.view_label}
+                if (dim.view_label)
+                else {}
+            )
+        }
+        for dim in model.config.meta.dimensions
+        if map_adapter_type_to_looker(adapter_type, dim.type) in looker_scalar_types
+    ]
+    return column_dimensions + model_dimensions
 
 
 def lookml_measure_filters(measure: models.Dbt2LookerMeasure, model: models.DbtModel):

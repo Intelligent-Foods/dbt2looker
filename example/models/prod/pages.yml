@@ -56,3 +56,10 @@ models:
             sql_on: "${users.id} = ${pages.user_id}"  # Sql string containing join clause
             type: left_outer                          # Optional - left_outer is default
             relationship: many_to_one                 # Optional - many_to_one is default
+        dimensions:
+          - name: domain_hash
+            type: string
+            sql: "md5(${TABLE}.referring_domain || ${TABLE}.user_id)"
+            description: >-
+              Dummy dimension showcasing derived dimension by SQL formula from
+              multiple columns.
