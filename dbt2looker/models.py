@@ -77,6 +77,10 @@ class LookerValueFormatName(str, Enum):
 class LookerHiddenType(str, Enum):
     yes = 'yes'
     no = 'no'
+    
+class LookerConvertTimezoneType(str, Enum):
+    yes = 'yes'
+    no = 'no'
 
 
 class Dbt2LookerMeasure(BaseModel):
@@ -111,6 +115,8 @@ class Dbt2LookerDimension(BaseModel):
     # similar to data_type, will become type for looker dimensions defined 
     # at the model level
     type: Optional[str]
+    convert_tz: Optional[LookerConvertTimezoneType]
+    timeframes: Optional[List[str]]
 
 
 class Dbt2LookerMeta(BaseModel):

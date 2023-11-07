@@ -219,13 +219,24 @@ def lookml_date_time_dimension_group(column: models.DbtModelColumn, adapter_type
     return {
         'name': column.meta.dimension.name or column.name,
         'type': 'time',
+        **(
+            {'label': column.meta.dimension.label}
+            if (column.meta.dimension.label)
+            else {}
+        ),
         'sql': column.meta.dimension.sql or f'${{TABLE}}.{column.name}',
         'description': indent_multiline_description(description),
         'datatype': map_adapter_type_to_looker(adapter_type, column.data_type),
-        'timeframes': looker_timeframes,
+        'timeframes': column.meta.dimension.timeframes or looker_timeframes,
         **(
             {'view_label': column.meta.dimension.view_label}
             if (column.meta.dimension.view_label)
+            else {}
+        ),
+        # convert_tz is yes if not specified by default
+        **(
+            {'convert_tz': 'no'}
+            if (column.meta.dimension.convert_tz == 'no')
             else {}
         )
     }
@@ -236,13 +247,23 @@ def lookml_date_dimension_group(column: models.DbtModelColumn, adapter_type: mod
     return {
         'name': column.meta.dimension.name or column.name,
         'type': 'time',
+        **(
+            {'label': column.meta.dimension.label}
+            if (column.meta.dimension.label)
+            else {}
+        ),
         'sql': column.meta.dimension.sql or f'${{TABLE}}.{column.name}',
         'description': indent_multiline_description(description),
         'datatype': map_adapter_type_to_looker(adapter_type, column.data_type),
-        'timeframes': looker_timeframes,
+        'timeframes': column.meta.dimension.timeframes or looker_timeframes,
         **(
             {'view_label': column.meta.dimension.view_label}
             if (column.meta.dimension.view_label)
+            else {}
+        ),
+        **(
+            {'convert_tz': 'no'}
+            if (column.meta.dimension.convert_tz == 'no')
             else {}
         )
     }

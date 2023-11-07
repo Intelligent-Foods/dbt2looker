@@ -2,6 +2,12 @@
 
 Recent and upcoming changes to dbt2looker
 
+## 0.11.5 (Not released to pypy)
+
+### Added
+
+- support for customizing timeframes and convert_tz for dimension groups
+
 ## 0.11.4 (Not released to pypy)
 
 ### Added
