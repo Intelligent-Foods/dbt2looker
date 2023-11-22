@@ -28,26 +28,26 @@ def tags_match(query_tag: str, model: models.DbtModel) -> bool:
         # Is the tag just a string?
         return query_tag == model.tags
 
+def _keep_dbt_node(node: models.DbtModel, tag=None) -> bool:
+    if not node.resource_type == 'model':
+       return False
+    if not hasattr(node, 'name'):
+        logging.error('Cannot parse model with id: "%s" - is the model file empty?', node.unique_id)
+        raise SystemExit('Failed')
+    ## ephemeral models are not materialized, and should not be included
+    if node.relation_name is None:
+        return False
+    if tag is not None:
+        return tags_match(tag, node)
+    return True
 
 def parse_models(raw_manifest: dict, tag=None) -> List[models.DbtModel]:
     manifest = models.DbtManifest(**raw_manifest)
-    
-    all_models: List[models.DbtModel] = [
+    return [
         node
         for node in manifest.nodes.values()
-        if node.resource_type == 'model'
+        if _keep_dbt_node(node, tag)
     ]
-
-    # Empty model files have many missing parameters
-    for model in all_models:
-        if not hasattr(model, 'name'):
-            logging.error('Cannot parse model with id: "%s" - is the model file empty?', model.unique_id)
-            raise SystemExit('Failed')
-
-    if tag is None:
-        return all_models
-    return [model for model in all_models if tags_match(tag, model)]
-
 
 def check_models_for_missing_column_types(dbt_typed_models: List[models.DbtModel]):
     for model in dbt_typed_models:

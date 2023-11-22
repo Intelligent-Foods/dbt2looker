@@ -2,6 +2,13 @@
 
 Recent and upcoming changes to dbt2looker
 
+## 0.11.6 (Not released to pypy)
+
+### Fixed
+
+- discard ephemaral models instead of parsing failure exception
+- re-generate Poetry lockfile so that it matches pyproject.toml (by using `poetry lock --no-update`)
+
 ## 0.11.5 (Not released to pypy)
 
 ### Added
