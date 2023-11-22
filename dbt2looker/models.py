@@ -184,7 +184,7 @@ class DbtModelConfig(BaseModel):
 
 class DbtModel(DbtNode):
     resource_type: Literal['model']
-    relation_name: str
+    relation_name: Optional[str] = None
     db_schema: str = Field(..., alias='schema')
     name: str
     description: Optional[str] = ''
