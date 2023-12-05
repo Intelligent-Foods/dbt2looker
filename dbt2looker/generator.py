@@ -383,7 +383,7 @@ def lookml_measures_from_model(model: models.DbtModel):
 
 def lookml_measure(measure_name: str, column: models.DbtModelColumn, measure: models.Dbt2LookerMeasure, model: models.DbtModel):
     measure_description = measure.description or column.description or f'{measure.type.value.capitalize()} of {column.name}'
-    
+
     m = {
         'name': measure_name,
         'type': measure.type.value,
@@ -404,17 +404,36 @@ def lookml_measure(measure_name: str, column: models.DbtModelColumn, measure: mo
         m['hidden'] = measure.hidden.value
     return m
 
+def lookml_set_of_dimensions(dimensions, dimension_groups):
+    dimension_group_fields = [
+        dg['name'] + '_' + dg['timeframes'][0]
+        for dg in dimension_groups
+    ]
+    dimension_fields = [
+        d['name']
+        for d in dimensions
+    ]
+    return { 
+        "name": "details",
+        "fields": dimension_group_fields + dimension_fields
+    }
+
 
 def lookml_view_from_dbt_model(model: models.DbtModel, adapter_type: models.SupportedDbtAdapters):
     view_name = model.config.meta.view_name or model.name
-    
+
+    dimensions = lookml_dimensions_from_model(model, adapter_type)
+    dimension_groups = lookml_dimension_groups_from_model(model, adapter_type)
+
     lookml = {
         'view': {
             'name': view_name,
             'sql_table_name': model.relation_name,
-            'dimension_groups': lookml_dimension_groups_from_model(model, adapter_type),
-            'dimensions': lookml_dimensions_from_model(model, adapter_type),
+            'drill_fields': '[details*]',
+            'dimension_groups': dimension_groups,
+            'dimensions': dimensions,
             'measures': lookml_measures_from_model(model),
+            'set': lookml_set_of_dimensions(dimensions, dimension_groups)
         }
     }
     logging.debug(
@@ -443,7 +462,7 @@ def lookml_model_from_dbt_model(model: models.DbtModel, connection_name: str):
         lookml['explore']['label'] = model.config.meta.label
     if model.config.meta.view_label:
         lookml['explore']['view_label'] = model.config.meta.view_label
-        
+
     # An explore description will start indented at 2 spaces, so subsequent
     # lines should start indented at 2 + 2 spaces.
     if model.description:

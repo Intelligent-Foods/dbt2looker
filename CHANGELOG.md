@@ -2,6 +2,12 @@
 
 Recent and upcoming changes to dbt2looker
 
+## 0.11.7 (Not released to pypy)
+
+### Added
+
+- view level drill fields including all dimensions and dimension groups
+
 ## 0.11.6 (Not released to pypy)
 
 ### Fixed
