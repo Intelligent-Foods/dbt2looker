@@ -404,11 +404,6 @@ def lookml_measure(measure_name: str, column: models.DbtModelColumn, measure: mo
         m['hidden'] = measure.hidden.value
     return m
 
-def lookml_set_from_field_list(set_name, fields):
-    # spaces and linebreaks are added for proper indentation in the view.lkml file
-    fields_string = '\n      , '.join(fields)
-    return set_name + ' {\n    fields: [\n      '+  fields_string + '\n    ]\n  }'
-
 def lookml_set_of_dimensions(dimensions, dimension_groups):
     dimension_group_fields = [
         dg['name'] + '_' + dg['timeframes'][0]
@@ -418,7 +413,10 @@ def lookml_set_of_dimensions(dimensions, dimension_groups):
         d['name']
         for d in dimensions
     ]
-    return dimension_group_fields + dimension_fields
+    return { 
+        "name": "details",
+        "fields": dimension_group_fields + dimension_fields
+    }
 
 
 def lookml_view_from_dbt_model(model: models.DbtModel, adapter_type: models.SupportedDbtAdapters):
@@ -426,8 +424,6 @@ def lookml_view_from_dbt_model(model: models.DbtModel, adapter_type: models.Supp
 
     dimensions = lookml_dimensions_from_model(model, adapter_type)
     dimension_groups = lookml_dimension_groups_from_model(model, adapter_type)
-    detail_fields = lookml_set_of_dimensions(dimensions, dimension_groups)
-    set = lookml_set_from_field_list('details', detail_fields)
 
     lookml = {
         'view': {
@@ -437,7 +433,7 @@ def lookml_view_from_dbt_model(model: models.DbtModel, adapter_type: models.Supp
             'dimension_groups': dimension_groups,
             'dimensions': dimensions,
             'measures': lookml_measures_from_model(model),
-            'set': set
+            'set': lookml_set_of_dimensions(dimensions, dimension_groups)
         }
     }
     logging.debug(
