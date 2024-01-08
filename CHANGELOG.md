@@ -2,6 +2,19 @@
 
 Recent and upcoming changes to dbt2looker
 
+## 0.11.8 (Not released to pypy)
+
+### Added
+
+- day_of_week as timeframe option
+- hidden option to dimensions (necessary to be able to join on fields we do not want to include)
+- suggestions option to dimensions
+- drill_fields options to measures
+
+### Changed
+
+- do not check dimensions referenced in measure filters as the check was too strict
+
 ## 0.11.7 (Not released to pypy)
 
 ### Added

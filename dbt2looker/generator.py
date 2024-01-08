@@ -185,6 +185,7 @@ looker_timeframes = [
     'time',
     'hour',
     'date',
+    'day_of_week',
     'day_of_year',
     'week',
     'week_of_year',
@@ -292,6 +293,11 @@ def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.Su
             'sql': column.meta.dimension.sql or f'${{TABLE}}.{column.name}',
             'description': indent_multiline_description(column.meta.dimension.description or column.description),
             **(
+                {'hidden': column.meta.dimension.hidden.value}
+                if (column.meta.dimension.hidden)
+                else {}
+            ),
+            **(
                 {'value_format_name': column.meta.dimension.value_format_name.value}
                 if (column.meta.dimension.value_format_name
                     and map_adapter_type_to_looker(adapter_type, column.data_type) == 'number')
@@ -311,6 +317,11 @@ def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.Su
                 {'view_label': column.meta.dimension.view_label}
                 if (column.meta.dimension.view_label)
                 else {}
+            ),
+            **(
+                {'suggestions': column.meta.dimension.suggestions}
+                if (column.meta.dimension.suggestions)
+                else {}
             )
         }
         for column in model.columns.values()
@@ -325,6 +336,11 @@ def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.Su
             'type': map_adapter_type_to_looker(adapter_type, dim.type),
             'sql': dim.sql,
             'description': indent_multiline_description(dim.description),
+            **(
+                {'hidden': dim.hidden.value}
+                if (dim.hidden)
+                else {}
+            ),
             **(
                 {'value_format_name': dim.value_format_name.value}
                 if (dim.value_format_name
@@ -345,6 +361,11 @@ def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.Su
                 {'view_label': dim.view_label}
                 if (dim.view_label)
                 else {}
+            ),
+            **(
+                {'suggestions': dim.suggestions}
+                if (dim.suggestions)
+                else {}
             )
         }
         for dim in model.config.meta.dimensions
@@ -354,19 +375,22 @@ def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.Su
 
 
 def lookml_measure_filters(measure: models.Dbt2LookerMeasure, model: models.DbtModel):
-    try:
-        columns = {
-            column_name: model.columns[column_name]
-            for f in measure.filters
-            for column_name in f
-        }
-    except KeyError as e:
-        raise ValueError(
-            f'Model {model.unique_id} contains a measure that references a non_existent column: {e}\n'
-            f'Ensure that dbt model {model.unique_id} contains a column: {e}'
-        ) from e
+    # This check is (temporarily) disabled as it cannot handle the case when a filter
+    # references a dimension defined as a derived dimension, not a column
+    
+    # try:
+    #     columns = {
+    #         column_name: model.columns[column_name]
+    #         for f in measure.filters
+    #         for column_name in f
+    #     }
+    # except KeyError as e:
+    #     raise ValueError(
+    #         f'Model {model.unique_id} contains a measure that references a non_existent column: {e}\n'
+    #         f'Ensure that dbt model {model.unique_id} contains a column: {e}'
+    #     ) from e
     return [{
-        (columns[column_name].meta.dimension.name or column_name): fexpr
+        (column_name): fexpr
         for column_name, fexpr in f.items()
     } for f in measure.filters]
 
@@ -402,6 +426,8 @@ def lookml_measure(measure_name: str, column: models.DbtModelColumn, measure: mo
         m['label'] = measure.label
     if measure.hidden:
         m['hidden'] = measure.hidden.value
+    if measure.drill_fields:
+        m['drill_fields'] = measure.drill_fields
     return m
 
 def lookml_set_of_dimensions(dimensions, dimension_groups):
@@ -411,7 +437,7 @@ def lookml_set_of_dimensions(dimensions, dimension_groups):
     ]
     dimension_fields = [
         d['name']
-        for d in dimensions
+        for d in dimensions if 'hidden' not in d.keys()
     ]
     return { 
         "name": "details",

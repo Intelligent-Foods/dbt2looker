@@ -93,6 +93,7 @@ class Dbt2LookerMeasure(BaseModel):
     view_label: Optional[str]
     label: Optional[str]
     hidden: Optional[LookerHiddenType]
+    drill_fields: Optional[List[str]]
 
     @validator('filters')
     def filters_are_singular_dicts(cls, v: List[Dict[str, str]]):
@@ -105,6 +106,7 @@ class Dbt2LookerMeasure(BaseModel):
 
 class Dbt2LookerDimension(BaseModel):
     enabled: Optional[bool] = True
+    hidden: Optional[LookerHiddenType]
     name: Optional[str]
     sql: Optional[str]
     description: Optional[str] = ''
@@ -117,6 +119,7 @@ class Dbt2LookerDimension(BaseModel):
     type: Optional[str]
     convert_tz: Optional[LookerConvertTimezoneType]
     timeframes: Optional[List[str]]
+    suggestions: Optional[List[str]]
 
 
 class Dbt2LookerMeta(BaseModel):
