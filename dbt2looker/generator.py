@@ -284,6 +284,39 @@ def lookml_dimension_groups_from_model(model: models.DbtModel, adapter_type: mod
     ]
     return date_times + dates
 
+def get_optional_dimension_fields_dict(props, looker_type):
+    return {
+        **(
+            {'hidden': props.hidden.value}
+            if (props.hidden)
+            else {}
+        ),
+        **(
+            {'value_format_name': props.value_format_name.value}
+            if (props.value_format_name and looker_type == 'number')
+            else {}
+        ),
+        **(
+            {'label': props.label}
+            if (props.label)
+            else {}
+        ),
+        **(
+            {'group_label': props.group_label}
+            if (props.group_label)
+            else {}
+        ),
+        **(
+            {'view_label': props.view_label}
+            if (props.view_label)
+            else {}
+        ),
+        **(
+            {'suggestions': props.suggestions}
+            if (props.suggestions)
+            else {}
+        )
+    }
 
 def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.SupportedDbtAdapters):
     column_dimensions = [
@@ -292,37 +325,10 @@ def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.Su
             'type': map_adapter_type_to_looker(adapter_type, column.data_type),
             'sql': column.meta.dimension.sql or f'${{TABLE}}.{column.name}',
             'description': indent_multiline_description(column.meta.dimension.description or column.description),
-            **(
-                {'hidden': column.meta.dimension.hidden.value}
-                if (column.meta.dimension.hidden)
-                else {}
-            ),
-            **(
-                {'value_format_name': column.meta.dimension.value_format_name.value}
-                if (column.meta.dimension.value_format_name
-                    and map_adapter_type_to_looker(adapter_type, column.data_type) == 'number')
-                else {}
-            ),
-            **(
-                {'label': column.meta.dimension.label}
-                if (column.meta.dimension.label)
-                else {}
-            ),
-            **(
-                {'group_label': column.meta.dimension.group_label}
-                if (column.meta.dimension.group_label)
-                else {}
-            ),
-            **(
-                {'view_label': column.meta.dimension.view_label}
-                if (column.meta.dimension.view_label)
-                else {}
-            ),
-            **(
-                {'suggestions': column.meta.dimension.suggestions}
-                if (column.meta.dimension.suggestions)
-                else {}
-            )
+            **(get_optional_dimension_fields_dict(
+                column.meta.dimension,
+                map_adapter_type_to_looker(adapter_type, column.data_type)
+            ))
         }
         for column in model.columns.values()
         if column.meta.dimension.enabled
@@ -336,37 +342,10 @@ def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.Su
             'type': map_adapter_type_to_looker(adapter_type, dim.type),
             'sql': dim.sql,
             'description': indent_multiline_description(dim.description),
-            **(
-                {'hidden': dim.hidden.value}
-                if (dim.hidden)
-                else {}
-            ),
-            **(
-                {'value_format_name': dim.value_format_name.value}
-                if (dim.value_format_name
-                    and map_adapter_type_to_looker(adapter_type, dim.type) == 'number')
-                else {}
-            ),
-            **(
-                {'label': dim.label}
-                if (dim.label)
-                else {}
-            ),
-            **(
-                {'group_label': dim.group_label}
-                if (dim.group_label)
-                else {}
-            ),
-            **(
-                {'view_label': dim.view_label}
-                if (dim.view_label)
-                else {}
-            ),
-            **(
-                {'suggestions': dim.suggestions}
-                if (dim.suggestions)
-                else {}
-            )
+            **(get_optional_dimension_fields_dict(
+                dim,
+                map_adapter_type_to_looker(adapter_type, dim.type)
+            ))
         }
         for dim in model.config.meta.dimensions
         if map_adapter_type_to_looker(adapter_type, dim.type) in looker_scalar_types
