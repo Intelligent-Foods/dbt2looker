@@ -2,6 +2,12 @@
 
 Recent and upcoming changes to dbt2looker
 
+## 0.11.9 (Not released to pypy)
+
+### Added
+
+- `required_access_grants` option to dimensions
+
 ## 0.11.8 (Not released to pypy)
 
 ### Added
