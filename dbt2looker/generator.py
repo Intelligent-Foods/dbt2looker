@@ -315,6 +315,11 @@ def get_optional_dimension_fields_dict(props, looker_type):
             {'suggestions': props.suggestions}
             if (props.suggestions)
             else {}
+        ),
+        **(
+            {'required_access_grants': props.required_access_grants}
+            if (props.required_access_grants)
+            else {}
         )
     }
 

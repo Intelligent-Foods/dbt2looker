@@ -120,6 +120,7 @@ class Dbt2LookerDimension(BaseModel):
     convert_tz: Optional[LookerConvertTimezoneType]
     timeframes: Optional[List[str]]
     suggestions: Optional[List[str]]
+    required_access_grants: Optional[List[str]]
 
 
 class Dbt2LookerMeta(BaseModel):
