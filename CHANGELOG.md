@@ -2,6 +2,11 @@
 
 Recent and upcoming changes to dbt2looker
 
+## 0.11.10 (Not released to pypy)
+
+### Fixed
+- now supports `pydantic` v2
+
 ## 0.11.9 (Not released to pypy)
 
 ### Added

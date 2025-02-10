@@ -4,13 +4,14 @@ try:
     from typing import Literal
 except ImportError:
     from typing_extensions import Literal
-from pydantic import BaseModel, Field, PydanticValueError, validator
+from pydantic import BaseModel, Field, validator
 
 
 # dbt2looker utility types
-class UnsupportedDbtAdapterError(PydanticValueError):
-    code = 'unsupported_dbt_adapter'
-    msg_template = '{wrong_value} is not a supported dbt adapter'
+class UnsupportedDbtAdapterError(ValueError):
+    def __init__(self, wrong_value: str):
+        msg = f'{wrong_value} is not a supported dbt adapter'
+        super().__init__(msg)
 
 
 class SupportedDbtAdapters(str, Enum):
@@ -87,13 +88,13 @@ class Dbt2LookerMeasure(BaseModel):
     type: LookerMeasureType
     filters: Optional[List[Dict[str, str]]] = []
     description: Optional[str] = ''
-    sql: Optional[str]
-    value_format_name: Optional[LookerValueFormatName]
-    group_label: Optional[str]
-    view_label: Optional[str]
-    label: Optional[str]
-    hidden: Optional[LookerHiddenType]
-    drill_fields: Optional[List[str]]
+    sql: Optional[str] = None
+    value_format_name: Optional[LookerValueFormatName] = None
+    group_label: Optional[str] = None
+    view_label: Optional[str] = None
+    label: Optional[str] = None
+    hidden: Optional[LookerHiddenType] = None
+    drill_fields: Optional[List[str]] = None
 
     @validator('filters')
     def filters_are_singular_dicts(cls, v: List[Dict[str, str]]):
@@ -106,21 +107,21 @@ class Dbt2LookerMeasure(BaseModel):
 
 class Dbt2LookerDimension(BaseModel):
     enabled: Optional[bool] = True
-    hidden: Optional[LookerHiddenType]
-    name: Optional[str]
-    sql: Optional[str]
+    hidden: Optional[LookerHiddenType] = None
+    name: Optional[str] = None
+    sql: Optional[str] = None
     description: Optional[str] = ''
-    value_format_name: Optional[LookerValueFormatName]
-    group_label: Optional[str]
-    view_label: Optional[str]
-    label: Optional[str]
+    value_format_name: Optional[LookerValueFormatName] = None
+    group_label: Optional[str] = None
+    view_label: Optional[str] = None
+    label: Optional[str] = None
     # similar to data_type, will become type for looker dimensions defined 
     # at the model level
-    type: Optional[str]
-    convert_tz: Optional[LookerConvertTimezoneType]
-    timeframes: Optional[List[str]]
-    suggestions: Optional[List[str]]
-    required_access_grants: Optional[List[str]]
+    type: Optional[str] = None
+    convert_tz: Optional[LookerConvertTimezoneType] = None
+    timeframes: Optional[List[str]] = None
+    suggestions: Optional[List[str]] = None
+    required_access_grants: Optional[List[str]] = None
 
 
 class Dbt2LookerMeta(BaseModel):
@@ -154,7 +155,7 @@ class DbtModelColumnMeta(Dbt2LookerMeta):
 class DbtModelColumn(BaseModel):
     name: str
     description: Optional[str] = ''
-    data_type: Optional[str]
+    data_type: Optional[str] = None
     meta: DbtModelColumnMeta
 
 
@@ -167,16 +168,16 @@ class Dbt2LookerExploreJoin(BaseModel):
     join: str
     type: Optional[LookerJoinType] = LookerJoinType.left_outer
     relationship: Optional[LookerJoinRelationship] = LookerJoinRelationship.many_to_one
-    sql_on: Optional[str]
-    foreign_key: Optional[str]
-    view_label: Optional[str]
+    sql_on: Optional[str] = None
+    foreign_key: Optional[str] = None
+    view_label: Optional[str] = None
 
 
 class Dbt2LookerModelMeta(BaseModel):
     joins: Optional[List[Dbt2LookerExploreJoin]] = []
-    view_name: Optional[str]
-    label: Optional[str]
-    view_label: Optional[str]
+    view_name: Optional[str] = None
+    label: Optional[str] = None
+    view_label: Optional[str] = None
     dimensions: Optional[List[Dbt2LookerDimension]] = []
 
 
@@ -194,7 +195,7 @@ class DbtModel(DbtNode):
     description: Optional[str] = ''
     columns: Dict[str, DbtModelColumn]
     tags: List[str]
-    config: Optional[DbtModelConfig]
+    config: Optional[DbtModelConfig] = None
 
     @validator('columns')
     def case_insensitive_column_names(cls, v: Dict[str, DbtModelColumn]):
