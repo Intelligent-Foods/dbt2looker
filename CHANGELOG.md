@@ -2,6 +2,11 @@
 
 Recent and upcoming changes to dbt2looker
 
+## 0.11.11 (Not released to pypy)
+
+### Fixed
+- do not add 'sql' key to measure configuration if type is 'count', see https://cloud.google.com/looker/docs/reference/param-measure-types#count
+
 ## 0.11.10 (Not released to pypy)
 
 ### Fixed

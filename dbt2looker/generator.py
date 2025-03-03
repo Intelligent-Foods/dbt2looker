@@ -392,12 +392,15 @@ def lookml_measures_from_model(model: models.DbtModel):
 def lookml_measure(measure_name: str, column: models.DbtModelColumn, measure: models.Dbt2LookerMeasure, model: models.DbtModel):
     measure_description = measure.description or column.description or f'{measure.type.value.capitalize()} of {column.name}'
 
+    _type = measure.type.value
+
     m = {
         'name': measure_name,
-        'type': measure.type.value,
-        'sql': measure.sql or f'${{TABLE}}.{column.name}',
+        'type': _type,
         'description': indent_multiline_description(measure_description),
     }
+    if _type.lower() != 'count':
+        m['sql'] = measure.sql or f'${{TABLE}}.{column.name}'
     if measure.filters:
         m['filters'] = lookml_measure_filters(measure, model)
     if measure.value_format_name:
