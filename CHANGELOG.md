@@ -2,6 +2,11 @@
 
 Recent and upcoming changes to dbt2looker
 
+## 0.11.12 (Not released to pypy)
+
+### Added
+- `group_item_label` optional dimension parameter
+
 ## 0.11.11 (Not released to pypy)
 
 ### Fixed
