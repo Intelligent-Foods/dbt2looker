@@ -320,6 +320,11 @@ def get_optional_dimension_fields_dict(props, looker_type):
             {'required_access_grants': props.required_access_grants}
             if (props.required_access_grants)
             else {}
+        ),
+        **(
+            {'group_item_label': props.group_item_label}
+            if (props.group_item_label)
+            else {}
         )
     }
 
