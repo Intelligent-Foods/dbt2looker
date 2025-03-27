@@ -122,6 +122,7 @@ class Dbt2LookerDimension(BaseModel):
     timeframes: Optional[List[str]] = None
     suggestions: Optional[List[str]] = None
     required_access_grants: Optional[List[str]] = None
+    group_item_label: Optional[str] = None
 
 
 class Dbt2LookerMeta(BaseModel):
