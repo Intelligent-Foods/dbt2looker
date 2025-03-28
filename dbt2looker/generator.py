@@ -325,7 +325,9 @@ def get_optional_dimension_fields_dict(props, looker_type):
             {'group_item_label': props.group_item_label}
             if (props.group_item_label)
             else {}
-        )
+        ),
+        **({"primary_key": props.primary_key} if (props.primary_key) else {}),
+        **({"value_format": props.value_format} if (props.value_format) else {}),
     }
 
 def lookml_dimensions_from_model(model: models.DbtModel, adapter_type: models.SupportedDbtAdapters):
@@ -404,7 +406,7 @@ def lookml_measure(measure_name: str, column: models.DbtModelColumn, measure: mo
         'type': _type,
         'description': indent_multiline_description(measure_description),
     }
-    if _type.lower() != 'count':
+    if _type.lower() not in ["count", "list"]:
         m['sql'] = measure.sql or f'${{TABLE}}.{column.name}'
     if measure.filters:
         m['filters'] = lookml_measure_filters(measure, model)
@@ -420,6 +422,12 @@ def lookml_measure(measure_name: str, column: models.DbtModelColumn, measure: mo
         m['hidden'] = measure.hidden.value
     if measure.drill_fields:
         m['drill_fields'] = measure.drill_fields
+    if measure.list_field:
+        m["list_field"] = measure.list_field
+    if measure.sql_distinct_key:
+        m["sql_distinct_key"] = measure.sql_distinct_key
+    if measure.value_format:
+        m["value_format"] = measure.value_format
     return m
 
 def lookml_set_of_dimensions(dimensions, dimension_groups):
