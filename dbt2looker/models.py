@@ -95,6 +95,9 @@ class Dbt2LookerMeasure(BaseModel):
     label: Optional[str] = None
     hidden: Optional[LookerHiddenType] = None
     drill_fields: Optional[List[str]] = None
+    list_field: Optional[str] = None
+    sql_distinct_key: Optional[str] = None
+    value_format: Optional[str] = None
 
     @validator('filters')
     def filters_are_singular_dicts(cls, v: List[Dict[str, str]]):
@@ -123,6 +126,8 @@ class Dbt2LookerDimension(BaseModel):
     suggestions: Optional[List[str]] = None
     required_access_grants: Optional[List[str]] = None
     group_item_label: Optional[str] = None
+    primary_key: Optional[str] = None
+    value_format: Optional[str] = None
 
 
 class Dbt2LookerMeta(BaseModel):
@@ -179,6 +184,7 @@ class Dbt2LookerModelMeta(BaseModel):
     view_name: Optional[str] = None
     label: Optional[str] = None
     view_label: Optional[str] = None
+    group_label: Optional[str] = None
     dimensions: Optional[List[Dbt2LookerDimension]] = []
 
 

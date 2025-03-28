@@ -2,7 +2,16 @@
 
 Recent and upcoming changes to dbt2looker
 
-## 0.11.12 (Not released to pypy)
+## 0.11.14 (Not released to pypy)
+
+### Added
+- `primary_key` optional dimension parameter
+- `value_format` optional dimension parameter
+- `list_field` optional measure parameter
+- `sql_distinct_key` optional measure parameter
+- `value_format` optional measure parameter
+
+## 0.11.13 (Not released to pypy)
 
 ### Added
 - `group_item_label` to the 'Dbt2LookerDimension' class in 'models.py'
