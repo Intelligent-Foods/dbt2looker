@@ -184,6 +184,7 @@ class Dbt2LookerModelMeta(BaseModel):
     view_name: Optional[str] = None
     label: Optional[str] = None
     view_label: Optional[str] = None
+    group_label: Optional[str] = None
     dimensions: Optional[List[Dbt2LookerDimension]] = []
 
 

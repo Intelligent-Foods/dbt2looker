@@ -488,6 +488,9 @@ def lookml_model_from_dbt_model(model: models.DbtModel, connection_name: str):
         lookml['explore']['label'] = model.config.meta.label
     if model.config.meta.view_label:
         lookml['explore']['view_label'] = model.config.meta.view_label
+    if model.config.meta.group_label:
+        lookml['explore']['group_label'] = model.config.meta.group_label
+    
 
     # An explore description will start indented at 2 spaces, so subsequent
     # lines should start indented at 2 + 2 spaces.
